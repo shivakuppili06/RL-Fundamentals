@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Fundamentals: CartPole & Q-Learning</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem 3rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 2rem;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #ccc;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        .highlight {
+            background-color: #e8f4f8;
+            padding: 1rem;
+            border-left: 4px solid #3498db;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .github-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #24292e;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .github-link:hover {
+            background-color: #1b1f23;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RL Fundamentals: CartPole & Q-Learning</h1>
+        
+        <p>Hey! I built this small project to get some genuine, hands-on experience with Reinforcement Learning before my interviews. Instead of just calling a black-box library like <code>stable-baselines3</code>, I wanted to write the core logic myself so I can actually explain how it works under the hood.</p>
+
+        <div class="highlight">
+            <p><strong>Goal:</strong> Train an agent to balance a pole on a moving cart using Q-Learning from scratch.</p>
+        </div>
+
+        <h3>The Setup</h3>
+        <p>I'm using the classic CartPole environment where a pole is balanced on a moving cart.</p>
+        <ul>
+            <li><strong>The State:</strong> What the agent sees at any given moment. In this case, it's a bunch of numbers telling us where the cart is, how fast it's moving, the angle of the pole, and how fast the pole is falling.</li>
+            <li><strong>The Action:</strong> What the agent can actually do about it. It can either push the cart left or right. That's it.</li>
+            <li><strong>The Reward:</strong> How we tell the agent it's doing a good job. It gets a point for every single frame the pole stays upright.</li>
+            <li><strong>The Policy:</strong> The agent's overall strategy. Basically, its internal rulebook of "if I'm in <em>this</em> state, I should take <em>this</em> action."</li>
+        </ul>
+
+        <h3>How Q-Learning actually works here</h3>
+        <p>Since CartPole's state is continuous (there are infinite possible angles and speeds), I first had to <strong>discretize</strong> it. Think of it like throwing those exact numbers into a set of buckets or bins. This lets us build a finite "Q-table"—which is essentially a giant cheat sheet.</p>
+        
+        <p>The Q-table maps every possible state to the expected future reward of pushing left vs. pushing right. When the agent takes an action, it looks at the reward it got and uses the <strong>Bellman update rule</strong> to update its cheat sheet. It basically says: <em>"Okay, let me update my old assumption with this immediate reward I just got, plus the best possible scenario I can see from my new position."</em></p>
+
+        <h3>Why Epsilon-Greedy?</h3>
+        <p>If the agent only ever took the action with the highest Q-value, it would get stuck doing the same dumb thing over and over because it never learned anything else.</p>
+        <p>That's where epsilon-greedy comes in. <code>Epsilon</code> is basically a "randomness dial."</p>
+        <ul>
+            <li>We start it at <code>1.0</code>, meaning the agent is just mashing buttons 100% randomly to explore the environment and see what happens.</li>
+            <li>Over time, we slowly turn that dial down (decay). As the agent learns more about the world, it starts trusting its Q-table more (exploiting its knowledge) rather than just blindly exploring.</li>
+        </ul>
+
+        <h3>Making Sense of the Reward Curve</h3>
+        <p>If you look at the learning curve generated by the script, you can clearly see the agent's journey:</p>
+        
+        <img src="learning_curve.png" alt="CartPole Q-Learning Reward Curve">
+
+        <ul>
+            <li><strong>At the start:</strong> The rewards are terrible. The agent is mostly just guessing, so the pole drops almost immediately.</li>
+            <li><strong>In the middle:</strong> It's a chaotic mess. You'll see massive spikes and drops as the agent occasionally stumbles into a good strategy, but then tries something else because the exploration dial is still somewhat high.</li>
+            <li><strong>At the end:</strong> The curve climbs up and flattens out at a high score. The randomness dial is near zero, and the agent is actively using its polished cheat sheet to successfully balance the pole for a long time!</li>
+        </ul>
+
+        <hr>
+
+        <h3>Running it yourself</h3>
+        <p>If you want to run the training loop and see it learn from scratch locally:</p>
+        <pre><code>pip install -r requirements.txt
+python train.py</code></pre>
+        <p>This will train the agent and spit out a fresh <code>learning_curve.png</code> so you can see the progress yourself.</p>
+        
+        <a href="https://github.com/shivakuppili06/RL-Fundamentals" target="_blank" class="github-link">View Code on GitHub</a>
+    </div>
+</body>
+</html>
